@@ -15,8 +15,6 @@
 #define TRUE 1
 #define FALSE 0
 
-#define IsNumberChar(n) ( n >= '0' && n <= '9')
-
 SOCKET listening;
 SOCKET clientSocket;
 
@@ -36,7 +34,7 @@ int is_doneOnce = FALSE;
 
 //--------------------------------------------------------------------------------------------------------------------------------------
 // General functions
-int streq(const char *str1, const char *str2) {
+int strEquality(const char *str1, const char *str2) {
 
     for (int i = 0; str1[i] != '\0' || str2[i] != '\0'; i++) {
 
@@ -47,7 +45,7 @@ int streq(const char *str1, const char *str2) {
     return TRUE;
 }
 
-int strstart(const char *main_str, const char *start_str) {
+int strStart(const char *main_str, const char *start_str) {
 
     for (int i = 0; start_str[i] != '\0'; i++) {
 
@@ -70,7 +68,7 @@ int atoi(const char *str) {
 
 //--------------------------------------------------------------------------------------------------------------------------------------
 // Get time and date
-void get_messageTime(char *destination, int size) {
+void getMessageTime(char *destination, int size) {
 
     time_t rawtime;
     struct tm *timeinfo;
@@ -81,7 +79,7 @@ void get_messageTime(char *destination, int size) {
     strftime(destination, size, "%I:%M%p", timeinfo);
 }
 
-void get_createDate(char *destination, int size) {
+void getCreateDate(char *destination, int size) {
 
     time_t rawtime;
     struct tm *timeinfo;
@@ -219,12 +217,12 @@ void receiveData(char *serverInput) {
 
 //--------------------------------------------------------------------------------------------------------------------------------------
 // Is exist in Data
-int exist_callback(void *data, int argsNum, char **value, char **columnName) {
+int existCallback(void *data, int argsNum, char **value, char **columnName) {
     *(int *) data = TRUE;
     return 0;
 }
 
-int is_exist(const char *ID) {
+int isExist(const char *ID) {
 
     char command[MaxBufSize];
     char *errMsg;
@@ -238,7 +236,7 @@ int is_exist(const char *ID) {
     int isExist = FALSE;
     int *isExist_pt = &isExist;
 
-    res = sqlite3_exec(Database, command, exist_callback, isExist_pt, &errMsg); // is exist?
+    res = sqlite3_exec(Database, command, existCallback, isExist_pt, &errMsg); // is exist?
     if (res != SQLITE_OK) {
         printf("Database: SQL error: %s\n", errMsg);
         return -1;
@@ -271,7 +269,7 @@ void addUser(const char *user_name) {
 
 }
 
-void give_userPassword(const char *user_name, const char *password) {
+void giveUserPassword(const char *user_name, const char *password) {
 
     char command[MaxBufSize];
     char *errMsg;
@@ -290,13 +288,13 @@ void give_userPassword(const char *user_name, const char *password) {
     }
 }
 
-void createUser_table(const char *user_name) {
+void createUserTable(const char *user_name) {
 
     char command[MaxBufSize], date[MaxBufSize];
     char *errMsg;
     int res;
 
-    get_createDate(date, MaxBufSize);
+    getCreateDate(date, MaxBufSize);
 
     sprintf(command,
 
@@ -330,13 +328,13 @@ void createUser_table(const char *user_name) {
     }
 }
 
-void signin() {
+void signup() {
 
     char password[MaxBufSize];
     int res;
     do {
         receiveData(UserName);
-        res = is_exist(UserName);
+        res = isExist(UserName);
 
         if (res == TRUE) {
             sendData(DECLINE);
@@ -349,8 +347,8 @@ void signin() {
     addUser(UserName);
 
     receiveData(password);
-    give_userPassword(UserName, password);
-    createUser_table(UserName);
+    giveUserPassword(UserName, password);
+    createUserTable(UserName);
 
     sendData(ACCEPT); // user successfully created
 
@@ -358,12 +356,12 @@ void signin() {
 
 //--------------------------------------------------------------------------------------------------------------------------------------
 // Login functions
-int whatis_callback(void *data, int argsNum, char **value, char **columnName) {
+int whatisCallback(void *data, int argsNum, char **value, char **columnName) {
     *(char *) data = (*value)[0]; // as known, all isUser,isGroup and isChannel is boolean
     return 0;
 }
 
-int is_userID(const char *ID) {
+int isUserId(const char *ID) {
 
     char command[MaxBufSize];
     char *errMsg;
@@ -377,7 +375,7 @@ int is_userID(const char *ID) {
     char isUser;
     char *isUser_pt = &isUser;
 
-    res = sqlite3_exec(Database, command, whatis_callback, isUser_pt, &errMsg); // now, give the password
+    res = sqlite3_exec(Database, command, whatisCallback, isUser_pt, &errMsg); // now, give the password
     if (res != SQLITE_OK) {
         printf("Database: SQL error: %s\n", errMsg);
         return -1;
@@ -390,12 +388,12 @@ int is_userID(const char *ID) {
     }
 }
 
-int password_callback(void *data, int argsNum, char **value, char **columnName) {
+int passwordCallback(void *data, int argsNum, char **value, char **columnName) {
     strcpy((char *) data, *value);
     return 0;
 }
 
-void get_UserPassword(const char *user_name, char *password_buf) {
+void getUserPassword(const char *user_name, char *password_buf) {
 
     char command[MaxBufSize];
     char *errMsg;
@@ -406,7 +404,7 @@ void get_UserPassword(const char *user_name, char *password_buf) {
             "WHERE ID = '%s'", user_name
     );
 
-    res = sqlite3_exec(Database, command, password_callback, password_buf, &errMsg); // now, give the password
+    res = sqlite3_exec(Database, command, passwordCallback, password_buf, &errMsg); // now, give the password
     if (res != SQLITE_OK) {
         printf("Database: SQL error: %s\n", errMsg);
     }
@@ -420,7 +418,7 @@ void login() {
 
     do {
         receiveData(UserName);
-        res = is_exist(UserName) && is_userID(UserName);
+        res = isExist(UserName) && isUserId(UserName);
 
         if (res == FALSE) {
             sendData(DECLINE);
@@ -430,11 +428,11 @@ void login() {
 
     } while (res == FALSE);
 
-    get_UserPassword(UserName, password);
+    getUserPassword(UserName, password);
 
     do {
         receiveData(input_password);
-        res = streq(password, input_password);
+        res = strEquality(password, input_password);
 
         if (res == FALSE) {
             sendData(DECLINE);
@@ -449,7 +447,7 @@ void login() {
 
 //--------------------------------------------------------------------------------------------------------------------------------------
 //  Create
-void insert_member(const char *pv_group_channel_ID, const char *subID, const char *isMember_flag) {
+void insertMember(const char *pv_group_channel_ID, const char *subID, const char *isMember_flag) {
 
     char command[MaxBufSize];
     char *errMsg;
@@ -469,7 +467,7 @@ void insert_member(const char *pv_group_channel_ID, const char *subID, const cha
 
 }
 
-int is_ExistInUser(const char *ID) {
+int isExistInUser(const char *ID) {
 
     char command[MaxBufSize];
     char *errMsg;
@@ -483,7 +481,7 @@ int is_ExistInUser(const char *ID) {
     int isExist = FALSE;
     int *isExist_pt = &isExist;
 
-    res = sqlite3_exec(Database, command, exist_callback, isExist_pt, &errMsg); // is exist?
+    res = sqlite3_exec(Database, command, existCallback, isExist_pt, &errMsg); // is exist?
     if (res != SQLITE_OK) {
         printf("Database: SQL error: %s\n", errMsg);
         return -1;
@@ -496,7 +494,7 @@ int is_ExistInUser(const char *ID) {
 }
 
 // Add pvChat
-int is_pvChatExistInUser(const char *userName1, const char *userName2) {
+int isPvChatExistInUser(const char *userName1, const char *userName2) {
 
     char possible_ID1[MaxBufSize];
     char possible_ID2[MaxBufSize];
@@ -506,12 +504,12 @@ int is_pvChatExistInUser(const char *userName1, const char *userName2) {
 
     int res;
 
-    res = is_ExistInUser(possible_ID1);
+    res = isExistInUser(possible_ID1);
     if (res == 1) {
         return TRUE;
     }
 
-    res = is_ExistInUser(possible_ID2);
+    res = isExistInUser(possible_ID2);
     if (res == 1) {
         return TRUE;
     }
@@ -519,13 +517,13 @@ int is_pvChatExistInUser(const char *userName1, const char *userName2) {
 
 }
 
-void add_pvChat(const char *userName1, const char *userName2) {
+void addPvChat(const char *userName1, const char *userName2) {
 
     char command[MaxBufSize], date[MaxBufSize];
     char *errMsg;
     int res;
 
-    get_createDate(date, MaxBufSize);
+    getCreateDate(date, MaxBufSize);
 
     sprintf(command,
 
@@ -546,8 +544,8 @@ void add_pvChat(const char *userName1, const char *userName2) {
     }
 
     sprintf(command, "%s&%s", userName1, userName2);
-    insert_member(command, userName1, "Y");
-    insert_member(command, userName2, "Y");
+    insertMember(command, userName1, "Y");
+    insertMember(command, userName2, "Y");
 
 
     sprintf(command,
@@ -564,7 +562,7 @@ void add_pvChat(const char *userName1, const char *userName2) {
 
 }
 
-void add_pvChatToUsers(const char *userName1, const char *userName2) {
+void addPvChatToUsers(const char *userName1, const char *userName2) {
 
     char command[MaxBufSize];
     char *errMsg;
@@ -594,19 +592,19 @@ void add_pvChatToUsers(const char *userName1, const char *userName2) {
     }
 }
 
-void create_pvChat() {
+void createPvChat() {
 
     char destination_user[MaxBufSize];
     int res;
 
     do {
         receiveData(destination_user);
-        if (streq(destination_user, UserName)) {
+        if (strEquality(destination_user, UserName)) {
             sendData("N"); // Privet chat with self notice
             return;
         }
 
-        res = is_exist(destination_user) && is_userID(destination_user);
+        res = isExist(destination_user) && isUserId(destination_user);
 
         if (res == FALSE) {
             sendData(DECLINE);
@@ -616,7 +614,7 @@ void create_pvChat() {
 
     } while (res == FALSE);
 
-    res = is_pvChatExistInUser(UserName, destination_user);
+    res = isPvChatExistInUser(UserName, destination_user);
 
     if (res == TRUE) { // if exist, return
         sendData(DECLINE);
@@ -625,19 +623,19 @@ void create_pvChat() {
         sendData(ACCEPT);
     }
 
-    add_pvChat(UserName, destination_user);
-    add_pvChatToUsers(UserName, destination_user);
+    addPvChat(UserName, destination_user);
+    addPvChatToUsers(UserName, destination_user);
     sendData(ACCEPT); // privet chat created successfully
 }
 
 //  Add group
-void add_group(const char *group_id) {
+void addGroup(const char *group_id) {
 
     char command[MaxBufSize], date[MaxBufSize];
     char *errMsg;
     int res;
 
-    get_createDate(date, MaxBufSize);
+    getCreateDate(date, MaxBufSize);
 
     sprintf(command,
 
@@ -657,7 +655,7 @@ void add_group(const char *group_id) {
 
     }
 
-    insert_member(group_id, UserName, "C");
+    insertMember(group_id, UserName, "C");
 
     sprintf(command,
 
@@ -672,7 +670,7 @@ void add_group(const char *group_id) {
     }
 }
 
-void add_groupToData(const char *group_id) {
+void addGroupToData(const char *group_id) {
 
     char command[MaxBufSize];
     char *errMsg;
@@ -691,7 +689,7 @@ void add_groupToData(const char *group_id) {
     }
 }
 
-void add_groupToUser(const char *group_id, const char *status) {
+void addGroupToUser(const char *group_id, const char *status) {
 
     char command[MaxBufSize];
     char *errMsg;
@@ -710,13 +708,13 @@ void add_groupToUser(const char *group_id, const char *status) {
     }
 }
 
-void create_group() {
+void createGroup() {
 
     char group_id[MaxBufSize];
     int res;
     do {
         receiveData(group_id);
-        res = is_exist(group_id);
+        res = isExist(group_id);
 
         if (res == TRUE) { // the same id found, so bad!
             sendData(DECLINE);
@@ -726,21 +724,21 @@ void create_group() {
 
     } while (res == TRUE);
 
-    add_group(group_id);
-    add_groupToData(group_id);
-    add_groupToUser(group_id, "C"); // as a creator
+    addGroup(group_id);
+    addGroupToData(group_id);
+    addGroupToUser(group_id, "C"); // as a creator
     sendData(ACCEPT); // group successfully created
 
 }
 
 // Add channel
-void add_channel(const char *channel_id) {
+void addChannel(const char *channel_id) {
 
     char command[MaxBufSize], date[MaxBufSize];
     char *errMsg;
     int res;
 
-    get_createDate(date, MaxBufSize);
+    getCreateDate(date, MaxBufSize);
 
     sprintf(command,
 
@@ -760,7 +758,7 @@ void add_channel(const char *channel_id) {
 
     }
 
-    insert_member(channel_id, UserName, "C");
+    insertMember(channel_id, UserName, "C");
 
     sprintf(command,
 
@@ -775,7 +773,7 @@ void add_channel(const char *channel_id) {
     }
 }
 
-void add_channelToData(const char *channel_id) {
+void addChannelToData(const char *channel_id) {
 
     char command[MaxBufSize];
     char *errMsg;
@@ -794,7 +792,7 @@ void add_channelToData(const char *channel_id) {
     }
 }
 
-void add_channelToUser(const char *channel_id, const char *status) {
+void addChannelToUser(const char *channel_id, const char *status) {
 
     char command[MaxBufSize];
     char *errMsg;
@@ -813,13 +811,13 @@ void add_channelToUser(const char *channel_id, const char *status) {
     }
 }
 
-void create_channel() {
+void createChannel() {
 
     char channel_id[MaxBufSize];
     int res;
     do {
         receiveData(channel_id);
-        res = is_exist(channel_id);
+        res = isExist(channel_id);
 
         if (res == TRUE) { // the same id found, so bad!
             sendData(DECLINE);
@@ -829,9 +827,9 @@ void create_channel() {
 
     } while (res == TRUE);
 
-    add_channel(channel_id);
-    add_channelToData(channel_id);
-    add_channelToUser(channel_id, "C");
+    addChannel(channel_id);
+    addChannelToData(channel_id);
+    addChannelToUser(channel_id, "C");
     sendData(ACCEPT); // channel successfully created
 
 }
@@ -839,7 +837,7 @@ void create_channel() {
 //  Join
 
 // Join group
-int is_groupID(const char *ID) {
+int isGroupId(const char *ID) {
 
     char command[MaxBufSize];
     char *errMsg;
@@ -853,7 +851,7 @@ int is_groupID(const char *ID) {
     char isGroup;
     char *isGroup_pt = &isGroup;
 
-    res = sqlite3_exec(Database, command, whatis_callback, isGroup_pt, &errMsg); // now, give the password
+    res = sqlite3_exec(Database, command, whatisCallback, isGroup_pt, &errMsg); // now, give the password
     if (res != SQLITE_OK) {
         printf("Database: SQL error: %s\n", errMsg);
         return -1;
@@ -867,7 +865,7 @@ int is_groupID(const char *ID) {
     }
 }
 
-void joinGroup_message(const char *group_ID, const char *subID) {
+void joinGroupMessage(const char *group_ID, const char *subID) {
 
     char command[MaxBufSize];
     char *errMsg;
@@ -886,19 +884,19 @@ void joinGroup_message(const char *group_ID, const char *subID) {
 
 }
 
-void join_group() {
+void joinGroup() {
 
     char group_id[MaxBufSize];
     int res;
     do {
         receiveData(group_id);
-        res = is_ExistInUser(group_id);
+        res = isExistInUser(group_id);
         if (res == TRUE) {
             sendData("D"); // duplicate join request!
             return;
         }
 
-        res = is_exist(group_id) && is_groupID(group_id);
+        res = isExist(group_id) && isGroupId(group_id);
 
         if (res == FALSE) { // the id is not found, so bad!
             sendData(DECLINE);
@@ -908,14 +906,14 @@ void join_group() {
 
     } while (res == FALSE);
 
-    insert_member(group_id, UserName, "M");
-    joinGroup_message(group_id, UserName);
-    add_groupToUser(group_id, "M");
+    insertMember(group_id, UserName, "M");
+    joinGroupMessage(group_id, UserName);
+    addGroupToUser(group_id, "M");
     sendData(ACCEPT); // group successfully created
 }
 
 // Join channel
-int is_channelID(const char *ID) {
+int isChannelId(const char *ID) {
 
     char command[MaxBufSize];
     char *errMsg;
@@ -929,7 +927,7 @@ int is_channelID(const char *ID) {
     char isChannel;
     char *isChannel_pt = &isChannel;
 
-    res = sqlite3_exec(Database, command, whatis_callback, isChannel_pt, &errMsg); // now, give the password
+    res = sqlite3_exec(Database, command, whatisCallback, isChannel_pt, &errMsg); // now, give the password
     if (res != SQLITE_OK) {
         printf("Database: SQL error: %s\n", errMsg);
         return -1;
@@ -943,19 +941,19 @@ int is_channelID(const char *ID) {
     }
 }
 
-void join_channel() {
+void joinChannel() {
 
     char channel_id[MaxBufSize];
     int res;
     do {
         receiveData(channel_id);
-        res = is_ExistInUser(channel_id);
+        res = isExistInUser(channel_id);
         if (res == TRUE) {
             sendData("D"); // duplicate join request!
             return;
         }
 
-        res = is_exist(channel_id) && is_channelID(channel_id);
+        res = isExist(channel_id) && isChannelId(channel_id);
 
         if (res == FALSE) { // the id is not found, so bad!
             sendData(DECLINE);
@@ -965,21 +963,21 @@ void join_channel() {
 
     } while (res == FALSE);
 
-    insert_member(channel_id, UserName, "M");
-    add_channelToUser(channel_id, "M");
+    insertMember(channel_id, UserName, "M");
+    addChannelToUser(channel_id, "M");
     sendData(ACCEPT); // group successfully created
 }
 //--------------------------------------------------------------------------------------------------------------------------------------
 // Start Chatting
 
 // find message number
-int messageNum_callback(void *data, int argsNum, char **value, char **columnName) {
+int messageNumCallback(void *data, int argsNum, char **value, char **columnName) {
 
     *(int *) data = atoi(*value);
     return 0;
 }
 
-int find_userLastMessageNum(const char *user_pv_group_channel_id) {
+int findUserLastMessageNum(const char *user_pv_group_channel_id) {
 
     char command[MaxBufSize];
     char *errMsg;
@@ -994,7 +992,7 @@ int find_userLastMessageNum(const char *user_pv_group_channel_id) {
     int messageNum = 0; // if user did not sendData anything return 0 to start from 1
     int *messageNum_pt = &messageNum;
 
-    res = sqlite3_exec(Database, command, messageNum_callback, messageNum_pt, &errMsg);
+    res = sqlite3_exec(Database, command, messageNumCallback, messageNum_pt, &errMsg);
 
     if (res != SQLITE_OK) {
         printf("Database: SQL error: %s\n", errMsg);
@@ -1003,7 +1001,7 @@ int find_userLastMessageNum(const char *user_pv_group_channel_id) {
 
 }
 
-char get_userStatus(const char *pv_group_channel_id, const char *userID) {
+char getUserStatus(const char *pv_group_channel_id, const char *userID) {
 
     char command[MaxBufSize];
     char *errMsg;
@@ -1017,7 +1015,7 @@ char get_userStatus(const char *pv_group_channel_id, const char *userID) {
     char status;
     char *status_pt = &status;
 
-    res = sqlite3_exec(Database, command, whatis_callback, status_pt, &errMsg);
+    res = sqlite3_exec(Database, command, whatisCallback, status_pt, &errMsg);
 
     if (res != SQLITE_OK) {
         printf("Database: SQL error: %s\n", errMsg);
@@ -1027,20 +1025,20 @@ char get_userStatus(const char *pv_group_channel_id, const char *userID) {
 }
 
 // sendData message
-int sendMessages_callback(void *data, int argsNum, char **value, char **columnName) {
+int sendMessagesCallback(void *data, int argsNum, char **value, char **columnName) {
 
     char ID[MaxBufSize], time[MaxBufSize], message[MaxBufSize];
     char status;
     int messageNum;
 
     int res;
-    res = is_userID((const char *) data); // data here is name of user_pv_group_channel
+    res = isUserId((const char *) data); // data here is name of user_pv_group_channel
     if (res == TRUE) {
         status = 'Y';
     } else if (value[0][0] == '*') { // if system message
         status = 'N';
     } else if (res == FALSE) {
-        status = get_userStatus((const char *) data, value[0]);
+        status = getUserStatus((const char *) data, value[0]);
     }
 
     strcpy(ID, value[0]);
@@ -1057,7 +1055,7 @@ int sendMessages_callback(void *data, int argsNum, char **value, char **columnNa
     return 0;
 }
 
-void send_allMessages(const char *user_pv_group_channel_id) {
+void sendAllMessages(const char *user_pv_group_channel_id) {
 
     char command[MaxBufSize];
     char *errMsg;
@@ -1069,7 +1067,7 @@ void send_allMessages(const char *user_pv_group_channel_id) {
             user_pv_group_channel_id  // this only for see all messages , for see only user message user use WHERE SubIDs = UserName
     );
 
-    res = sqlite3_exec(Database, command, sendMessages_callback, (void *) user_pv_group_channel_id, &errMsg);
+    res = sqlite3_exec(Database, command, sendMessagesCallback, (void *) user_pv_group_channel_id, &errMsg);
     sendData(DECLINE); // that is it!
 
     if (res != SQLITE_OK) {
@@ -1078,7 +1076,7 @@ void send_allMessages(const char *user_pv_group_channel_id) {
 }
 
 // sendData list callback
-int sendList_callback(void *data, int argsNum, char **value, char **columnName) {
+int sendListCallback(void *data, int argsNum, char **value, char **columnName) {
 
     char ID[MaxBufSize];
     sprintf(ID, ">%s", *value);
@@ -1093,13 +1091,13 @@ int sendList_callback(void *data, int argsNum, char **value, char **columnName) 
 }
 
 // add message
-void add_Message(const char *user_pv_group_channel_id, const char *input_message, int messageNum) {
+void addMessage(const char *user_pv_group_channel_id, const char *input_message, int messageNum) {
 
     char command[MaxBufSize], time[MaxBufSize];
     char *errMsg;
     int res;
 
-    get_messageTime(time, MaxBufSize);
+    getMessageTime(time, MaxBufSize);
 
     sprintf(command,
             "INSERT INTO [%s] (SubIDs, isMessage, MessageNumber,Time, Message) VALUES"
@@ -1115,7 +1113,7 @@ void add_Message(const char *user_pv_group_channel_id, const char *input_message
 }
 
 // do command
-void delete_message(const char *user_pv_group_channel_id, const char *input_message) {
+void deleteMessage(const char *user_pv_group_channel_id, const char *input_message) {
 
     int messageNum = 0;
     sscanf(input_message, "%d", &messageNum);
@@ -1143,7 +1141,7 @@ void delete_message(const char *user_pv_group_channel_id, const char *input_mess
 
 }
 
-void edit_message(const char *user_pv_group_channel_id, const char *input_message) {
+void editMessage(const char *user_pv_group_channel_id, const char *input_message) {
 
     char updated_text[MaxBufSize] = "";
     int messageNum = 0;
@@ -1152,7 +1150,7 @@ void edit_message(const char *user_pv_group_channel_id, const char *input_messag
     if (messageNum <= 0) { // Nope!
         return;
     }
-    if (streq(updated_text, "")) {
+    if (strEquality(updated_text, "")) {
         return;
     }
 
@@ -1175,16 +1173,16 @@ void edit_message(const char *user_pv_group_channel_id, const char *input_messag
 
 }
 
-void do_command(const char *input_message, const char *user_pv_group_channel_id) {
+void doCommand(const char *input_message, const char *user_pv_group_channel_id) {
 
 
-    if (strstart(input_message, "/delete ")) {
+    if (strStart(input_message, "/delete ")) {
 
-        delete_message(user_pv_group_channel_id,
-                       input_message + 8); //example: /delete 1234 --> should ignore 8 characters
-    } else if (strstart(input_message, "/edit ")) {
+        deleteMessage(user_pv_group_channel_id,
+                      input_message + 8); //example: /delete 1234 --> should ignore 8 characters
+    } else if (strStart(input_message, "/edit ")) {
 
-        edit_message(user_pv_group_channel_id, input_message + 6);
+        editMessage(user_pv_group_channel_id, input_message + 6);
     }
     // members list
     // promit to admin
@@ -1195,31 +1193,31 @@ void do_command(const char *input_message, const char *user_pv_group_channel_id)
 void savedMessages() {
 
     char input_message[MaxBufSize];
-    int startMessageNum = find_userLastMessageNum(UserName) + 1;
+    int startMessageNum = findUserLastMessageNum(UserName) + 1;
 
-    while (!streq(input_message, DECLINE)) {
+    while (!strEquality(input_message, DECLINE)) {
 
-        send_allMessages(UserName);
+        sendAllMessages(UserName);
 
         receiveData(input_message);
-        if (streq(input_message, DECLINE)) {
+        if (strEquality(input_message, DECLINE)) {
             return;
-        } else if (streq(input_message, "")) {
+        } else if (strEquality(input_message, "")) {
             continue;
         } else if (input_message[0] == '/' && input_message[1] == '/') {
-            add_Message(UserName, input_message + 1, startMessageNum);
+            addMessage(UserName, input_message + 1, startMessageNum);
             startMessageNum++;
         } else if (input_message[0] == '/') {
-            do_command(input_message, UserName);
+            doCommand(input_message, UserName);
         } else {
-            add_Message(UserName, input_message, startMessageNum);
+            addMessage(UserName, input_message, startMessageNum);
             startMessageNum++;
         }
     }
 }
 
 // Pv chats
-void find_pvOpponent(char *full_pvChatID, char *opponent_destination) {
+void findPvOpponent(const char *full_pvChatID, char *opponent_destination) {
 
     char user1[MaxBufSize], user2[MaxBufSize];
 
@@ -1240,19 +1238,19 @@ void find_pvOpponent(char *full_pvChatID, char *opponent_destination) {
     }
     user2[i] = '\0';
 
-    if (streq(user1, UserName)) {
+    if (strEquality(user1, UserName)) {
         strcpy(opponent_destination, user2);
-    } else if (streq(user2, UserName)) {
+    } else if (strEquality(user2, UserName)) {
         strcpy(opponent_destination, user1);
     }
 
 
 }
 
-int sendPvChatList_callback(void *data, int argsNum, char **value, char **columnName) {
+int sendPvChatListCallback(void *data, int argsNum, char **value, char **columnName) {
 
     char opponent_ID[MaxBufSize];
-    find_pvOpponent(*value, buffer);
+    findPvOpponent(*value, buffer);
     sprintf(opponent_ID, ">%s", buffer);
 
     int index = (*(int *) data);
@@ -1264,7 +1262,7 @@ int sendPvChatList_callback(void *data, int argsNum, char **value, char **column
     return 0;
 }
 
-int send_pvChatList() {
+int sendPvChatList() {
 
     char command[MaxBufSize];
     char *errMsg;
@@ -1278,7 +1276,7 @@ int send_pvChatList() {
     int pvChatsNum = 0;
     int *pvChatsNum_pt = &pvChatsNum;
 
-    res = sqlite3_exec(Database, command, sendPvChatList_callback, pvChatsNum_pt, &errMsg);
+    res = sqlite3_exec(Database, command, sendPvChatListCallback, pvChatsNum_pt, &errMsg);
     sendData(DECLINE); // that is it!
 
     if (res != SQLITE_OK) {
@@ -1288,30 +1286,30 @@ int send_pvChatList() {
     return pvChatsNum;
 }
 
-void goto_pvChat(const char *pvChat_id) {
+void gotoPvChat(const char *pvChat_id) {
 
     Sleep(WaitTOSendMessage);
     sendData(pvChat_id);
 
     char input_message[MaxBufSize];
-    int startMessageNum = find_userLastMessageNum(pvChat_id) + 1;
+    int startMessageNum = findUserLastMessageNum(pvChat_id) + 1;
 
     while (1) {
 
-        send_allMessages(pvChat_id);
+        sendAllMessages(pvChat_id);
 
         receiveData(input_message);
-        if (streq(input_message, DECLINE)) {
+        if (strEquality(input_message, DECLINE)) {
             return;
-        } else if (streq(input_message, "")) {
+        } else if (strEquality(input_message, "")) {
             continue;
         } else if (input_message[0] == '/' && input_message[1] == '/') {
-            add_Message(pvChat_id, input_message + 1, startMessageNum);
+            addMessage(pvChat_id, input_message + 1, startMessageNum);
             startMessageNum++;
         } else if (input_message[0] == '/') {
-            do_command(input_message, pvChat_id);
+            doCommand(input_message, pvChat_id);
         } else {
-            add_Message(pvChat_id, input_message, startMessageNum);
+            addMessage(pvChat_id, input_message, startMessageNum);
             startMessageNum++;
         }
     }
@@ -1320,21 +1318,21 @@ void goto_pvChat(const char *pvChat_id) {
 void pvChats() {
 
     int PvChatsNum, mood;
-    PvChatsNum = send_pvChatList();
+    PvChatsNum = sendPvChatList();
 
     receiveData(buffer);
 
-    while (!streq(buffer, DECLINE)) {
+    while (!strEquality(buffer, DECLINE)) {
 
         mood = atoi(buffer);
-        goto_pvChat(list[mood - 1]);
+        gotoPvChat(list[mood - 1]);
 
         receiveData(buffer);
     }
 }
 
 // Groups
-int send_groupsList() {
+int sendGroupsList() {
 
     char command[MaxBufSize];
     char *errMsg;
@@ -1348,7 +1346,7 @@ int send_groupsList() {
     int groupsNum = 0;
     int *groupsNum_pt = &groupsNum;
 
-    res = sqlite3_exec(Database, command, sendList_callback, groupsNum_pt, &errMsg);
+    res = sqlite3_exec(Database, command, sendListCallback, groupsNum_pt, &errMsg);
     sendData(DECLINE); // that is it!
 
     if (res != SQLITE_OK) {
@@ -1358,30 +1356,30 @@ int send_groupsList() {
     return groupsNum;
 }
 
-void goto_group(const char *group_id) {
+void gotoGroup(const char *group_id) {
 
     Sleep(WaitTOSendMessage);
     sendData(group_id);
 
     char input_message[MaxBufSize];
-    int startMessageNum = find_userLastMessageNum(group_id) + 1;
+    int startMessageNum = findUserLastMessageNum(group_id) + 1;
 
     while (1) {
 
-        send_allMessages(group_id);
+        sendAllMessages(group_id);
 
         receiveData(input_message);
-        if (streq(input_message, DECLINE)) {
+        if (strEquality(input_message, DECLINE)) {
             return;
-        } else if (streq(input_message, "")) {
+        } else if (strEquality(input_message, "")) {
             continue;
         } else if (input_message[0] == '/' && input_message[1] == '/') {
-            add_Message(group_id, input_message + 1, startMessageNum);
+            addMessage(group_id, input_message + 1, startMessageNum);
             startMessageNum++;
         } else if (input_message[0] == '/') {
-            do_command(input_message, group_id);
+            doCommand(input_message, group_id);
         } else {
-            add_Message(group_id, input_message, startMessageNum);
+            addMessage(group_id, input_message, startMessageNum);
             startMessageNum++;
         }
     }
@@ -1390,14 +1388,14 @@ void goto_group(const char *group_id) {
 void groups() {
 
     int groupsNum, mood;
-    groupsNum = send_groupsList();
+    groupsNum = sendGroupsList();
 
     receiveData(buffer);
 
-    while (!streq(buffer, DECLINE)) {
+    while (!strEquality(buffer, DECLINE)) {
 
         mood = atoi(buffer);
-        goto_group(list[mood - 1]);
+        gotoGroup(list[mood - 1]);
 
         receiveData(buffer);
     }
@@ -1405,7 +1403,7 @@ void groups() {
 }
 
 // Channels
-int send_channelsList() {
+int sendChannelsList() {
 
     char command[MaxBufSize];
     char *errMsg;
@@ -1419,7 +1417,7 @@ int send_channelsList() {
     int channelsNum = 0;
     int *channelsNum_pt = &channelsNum;
 
-    res = sqlite3_exec(Database, command, sendList_callback, channelsNum_pt, &errMsg);
+    res = sqlite3_exec(Database, command, sendListCallback, channelsNum_pt, &errMsg);
     sendData(DECLINE); // that is it!
 
     if (res != SQLITE_OK) {
@@ -1429,34 +1427,34 @@ int send_channelsList() {
     return channelsNum;
 }
 
-void goto_channel(const char *channel_id) {
+void gotoChannel(const char *channel_id) {
 
     Sleep(WaitTOSendMessage);
     sendData(channel_id);
 
-    char status = get_userStatus(channel_id, UserName);
+    char status = getUserStatus(channel_id, UserName);
     sprintf(buffer, "%c", status);
     sendData(buffer);
 
     char input_message[MaxBufSize];
-    int startMessageNum = find_userLastMessageNum(channel_id) + 1;
+    int startMessageNum = findUserLastMessageNum(channel_id) + 1;
 
     while (1) {
 
-        send_allMessages(channel_id);
+        sendAllMessages(channel_id);
 
         receiveData(input_message);
-        if (streq(input_message, DECLINE)) {
+        if (strEquality(input_message, DECLINE)) {
             return;
-        } else if (streq(input_message, "")) {
+        } else if (strEquality(input_message, "")) {
             continue;
         } else if (input_message[0] == '/' && input_message[1] == '/') {
-            add_Message(channel_id, input_message + 1, startMessageNum);
+            addMessage(channel_id, input_message + 1, startMessageNum);
             startMessageNum++;
         } else if (input_message[0] == '/') {
-            do_command(input_message, channel_id);
+            doCommand(input_message, channel_id);
         } else {
-            add_Message(channel_id, input_message, startMessageNum);
+            addMessage(channel_id, input_message, startMessageNum);
             startMessageNum++;
         }
     }
@@ -1465,14 +1463,14 @@ void goto_channel(const char *channel_id) {
 void channels() {
 
     int channelsNum, mood;
-    channelsNum = send_channelsList();
+    channelsNum = sendChannelsList();
 
     receiveData(buffer);
 
-    while (!streq(buffer, DECLINE)) {
+    while (!strEquality(buffer, DECLINE)) {
 
         mood = atoi(buffer);
-        goto_channel(list[mood - 1]);
+        gotoChannel(list[mood - 1]);
 
         receiveData(buffer);
     }
@@ -1480,7 +1478,7 @@ void channels() {
 
 //--------------------------------------------------------------------------------------------------------------------------------------
 // Contacts
-int sendContactList_callback(void *data, int argsNum, char **value, char **columnName) {
+int sendContactListCallback(void *data, int argsNum, char **value, char **columnName) {
 
     char ID[MaxBufSize];
     sprintf(ID, ">%s", *value);
@@ -1490,7 +1488,7 @@ int sendContactList_callback(void *data, int argsNum, char **value, char **colum
     return 0;
 }
 
-void send_contactsList() {
+void sendContactsList() {
 
     char command[MaxBufSize];
     char *errMsg;
@@ -1501,7 +1499,7 @@ void send_contactsList() {
             "WHERE isContact = 'Y'", UserName
     );
 
-    res = sqlite3_exec(Database, command, sendContactList_callback, NULL, &errMsg);
+    res = sqlite3_exec(Database, command, sendContactListCallback, NULL, &errMsg);
     sendData(DECLINE); // that is it!
 
     if (res != SQLITE_OK) {
@@ -1509,7 +1507,7 @@ void send_contactsList() {
     }
 }
 
-int is_contactExistInUser(const char *ID) {
+int isContactExistInUser(const char *ID) {
 
     char command[MaxBufSize];
     char *errMsg;
@@ -1523,7 +1521,7 @@ int is_contactExistInUser(const char *ID) {
     int is_contactExist = FALSE;
     int *is_contactExist_pt = &is_contactExist;
 
-    res = sqlite3_exec(Database, command, exist_callback, is_contactExist_pt, &errMsg); // is exist?
+    res = sqlite3_exec(Database, command, existCallback, is_contactExist_pt, &errMsg); // is exist?
     if (res != SQLITE_OK) {
         printf("Database: SQL error: %s\n", errMsg);
         return -1;
@@ -1535,7 +1533,7 @@ int is_contactExistInUser(const char *ID) {
 
 }
 
-void add_contactToUser(const char *destination_userName) {
+void addContactToUser(const char *destination_userName) {
 
     char command[MaxBufSize];
     char *errMsg;
@@ -1554,29 +1552,29 @@ void add_contactToUser(const char *destination_userName) {
 
 }
 
-void add_contact() {
+void addContact() {
 
     char destination_contact[MaxBufSize];
     int res;
 
     do {
         receiveData(destination_contact);
-        res = is_contactExistInUser(destination_contact);
+        res = isContactExistInUser(destination_contact);
         if (res == TRUE) {
             sendData("D"); // duplicate join request!
 
             receiveData(buffer); // stay for user to accept commands
-            if (streq(buffer, ACCEPT)) {
+            if (strEquality(buffer, ACCEPT)) {
                 return;
             }
         }
 
-        res = is_exist(destination_contact) && is_userID(destination_contact);
+        res = isExist(destination_contact) && isUserId(destination_contact);
 
         if (res == FALSE) {
             sendData(DECLINE);
         } else if (res == TRUE) {
-            add_contactToUser(destination_contact);
+            addContactToUser(destination_contact);
             sendData(ACCEPT);
         }
 
@@ -1584,14 +1582,14 @@ void add_contact() {
 
 
     receiveData(buffer); // stay for user to accept commands
-    if (streq(buffer, ACCEPT)) {
+    if (strEquality(buffer, ACCEPT)) {
         return;
     }
 
 
 }
 
-void delete_contactFromUser(const char *destination_userName) {
+void deleteContactFromUser(const char *destination_userName) {
 
     char command[MaxBufSize];
     char *errMsg;
@@ -1611,19 +1609,19 @@ void delete_contactFromUser(const char *destination_userName) {
 
 }
 
-void delete_contact() {
+void deleteContact() {
 
     char destination_contact[MaxBufSize];
     int res;
 
     do {
         receiveData(destination_contact);
-        res = is_contactExistInUser(destination_contact);
+        res = isContactExistInUser(destination_contact);
 
         if (res == FALSE) {
             sendData(DECLINE);
         } else if (res == TRUE) {
-            delete_contactFromUser(destination_contact);
+            deleteContactFromUser(destination_contact);
             sendData(ACCEPT);
         }
 
@@ -1631,7 +1629,7 @@ void delete_contact() {
 
 
     receiveData(buffer); // stay for user to accept commands
-    if (streq(buffer, ACCEPT)) {
+    if (strEquality(buffer, ACCEPT)) {
         return;
     }
 
@@ -1644,71 +1642,57 @@ void contacts() {
 
     while (1) {
 
-        send_contactsList();
+        sendContactsList();
 
         receiveData(buffer);
-        if (streq(buffer, DECLINE)) {
+        if (strEquality(buffer, DECLINE)) {
             return;
-        } else if (streq(buffer, "R")) { // retry
+        } else if (strEquality(buffer, "R")) { // retry
             continue;
         }
 
 
         mood = atoi(buffer);
         if (mood == 1) {
-            add_contact();
+            addContact();
         } else if (mood == 2) {
-            delete_contact();
+            deleteContact();
         }
 
     }
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------------
-// Process responce
-int process_responce() {
+// Process response
+int processResponse() {
 
-    if (streq(buffer, "signin")) {
-
-        signin();
-    } else if (streq(buffer, "login")) {
-
+    if (strEquality(buffer, "signup")) {
+        signup();
+    } else if (strEquality(buffer, "login")) {
         login();
-    } else if (streq(buffer, "create_pvChat")) {
-
-        create_pvChat();
-    } else if (streq(buffer, "create_group")) {
-
-        create_group();
-    } else if (streq(buffer, "create_channel")) {
-
-        create_channel();
-    } else if (streq(buffer, "join_group")) {
-
-        join_group();
-    } else if (streq(buffer, "join_channel")) {
-
-        join_channel();
-    } else if (streq(buffer, "savedMessages")) {
-
+    } else if (strEquality(buffer, "createPvChat")) {
+        createPvChat();
+    } else if (strEquality(buffer, "createGroup")) {
+        createGroup();
+    } else if (strEquality(buffer, "createChannel")) {
+        createChannel();
+    } else if (strEquality(buffer, "joinGroup")) {
+        joinGroup();
+    } else if (strEquality(buffer, "joinChannel")) {
+        joinChannel();
+    } else if (strEquality(buffer, "savedMessages")) {
         savedMessages();
-    } else if (streq(buffer, "pvChats")) {
-
+    } else if (strEquality(buffer, "pvChats")) {
         pvChats();
-    } else if (streq(buffer, "groups")) {
-
+    } else if (strEquality(buffer, "groups")) {
         groups();
-    } else if (streq(buffer, "channels")) {
-
+    } else if (strEquality(buffer, "channels")) {
         channels();
-    } else if (streq(buffer, "contacts")) {
-
+    } else if (strEquality(buffer, "contacts")) {
         contacts();
-    } else if (streq(buffer, "off")) {
-
+    } else if (strEquality(buffer, "off")) {
         return FALSE;
     } else {
-
         printf("There is an invalid response\n");
     }
 
@@ -1717,14 +1701,14 @@ int process_responce() {
 
 //--------------------------------------------------------------------------------------------------------------------------------------
 // Main loop
-void main_loop() {
+void mainLoop() {
 
     int serverRunning = TRUE;
 
     do {
 
         receiveData(buffer);
-        serverRunning = process_responce(); //answer the response
+        serverRunning = processResponse(); //answer the response
 
     } while (serverRunning == TRUE);
 
@@ -1744,7 +1728,7 @@ int main(int args, char **strs) {
 
     waitConnection();
     //main loop
-    main_loop();
+    mainLoop();
 
 
     // make ready to program ending....

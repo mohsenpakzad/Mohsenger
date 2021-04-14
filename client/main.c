@@ -30,11 +30,10 @@ int is_doneOnce = FALSE;
 //--------------------------------------------------------------------------------------------------------------------------------------
 // General functions
 void clean() {
-
     while (getchar() != '\n');
 }
 
-void getstr(char *destination) {
+void getStr(char *destination) {
 
     char c;
     int i = 0;
@@ -68,7 +67,7 @@ int getID(char *destination) {
     return 1;
 }
 
-int streq(const char *str1, const char *str2) {
+int strEquality(const char *str1, const char *str2) {
 
     for (int i = 0; str1[i] != '\0' || str2[i] != '\0'; i++) {
 
@@ -79,7 +78,7 @@ int streq(const char *str1, const char *str2) {
     return 1;
 }
 
-void strapp(char *destination, const char *source) {
+void strAppend(char *destination, const char *source) {
 
     int i;
     for (i = 0; destination[i] != '\0'; i++);
@@ -90,16 +89,6 @@ void strapp(char *destination, const char *source) {
         i++;
     }
     destination[i] = '\0';
-}
-
-int atoi(const char *str) {
-
-    int result = 0;
-
-    for (int i = 0; str[i] != '\0'; i++) {
-        result = result * 10 + (str[i] - '0');
-    }
-    return result;
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------------
@@ -223,9 +212,9 @@ void receiveData(char *userOutput) {
 
 //--------------------------------------------------------------------------------------------------------------------------------------
 // login menu
-void user_signin() {
+void signupUser() {
 
-    sendData("signin");
+    sendData("signup");
 
     int res, isContinue = 1;
     do {
@@ -243,10 +232,10 @@ void user_signin() {
         sendData(UserName);
         receiveData(buffer);
 
-        if (streq(buffer, DECLINE)) {
+        if (strEquality(buffer, DECLINE)) {
             printf("This usrname is already token, please try again...");
             clean();
-        } else if (streq(buffer, ACCEPT)) {
+        } else if (strEquality(buffer, ACCEPT)) {
             isContinue = 0;
         }
 
@@ -255,20 +244,20 @@ void user_signin() {
     char password[MaxBufSize];
     system("cls");
     printf("Now, please enter the password for \"%s\" (if you don't want password, just press enter): ", UserName);
-    getstr(password);
+    getStr(password);
     sendData(password);
 
 
     receiveData(buffer); // receiveData result
 
-    if (streq(buffer, ACCEPT)) {
+    if (strEquality(buffer, ACCEPT)) {
         printf("The username with ID \"%s\" is created successfully...\n", UserName);
         clean();
     }
 
 }
 
-void user_login() {
+void loginUser() {
 
     sendData("login");
 
@@ -288,10 +277,10 @@ void user_login() {
         sendData(UserName);
         receiveData(buffer);
 
-        if (streq(buffer, DECLINE)) {
+        if (strEquality(buffer, DECLINE)) {
             printf("Username not exist, please try again...");
             clean();
-        } else if (streq(buffer, ACCEPT)) {
+        } else if (strEquality(buffer, ACCEPT)) {
             isContinue = 0;
         }
 
@@ -302,12 +291,12 @@ void user_login() {
     do {
         system("cls");
         printf("Now, please enter the password of \"%s\": ", UserName);
-        getstr(intput_password);
+        getStr(intput_password);
 
         sendData(intput_password);
         receiveData(buffer);
 
-        if (streq(buffer, DECLINE)) {
+        if (strEquality(buffer, DECLINE)) {
             printf("Wrong password, please try again...\n");
             clean();
         } else {
@@ -319,14 +308,14 @@ void user_login() {
 
     receiveData(buffer); // receiveData result
 
-    if (streq(buffer, ACCEPT)) {
+    if (strEquality(buffer, ACCEPT)) {
         printf("The username with ID \"%s\" successfully logged in...\n", UserName);
         clean();
     }
 
 }
 
-int login_menu() {
+int loginMenu() {
 
     int mood;
     do {
@@ -334,8 +323,8 @@ int login_menu() {
         printf(
                 "***** Welcome to Mohsenger! *****\n"
                 "What do you like to do?\n"
-                "1. Log in\n"
-                "2. Sign on\n"
+                "1. Login\n"
+                "2. Signup\n"
                 "3. Exit\n"
         );
 
@@ -351,11 +340,9 @@ int login_menu() {
     } while (mood != 1 && mood != 2 && mood != 3);
 
     if (mood == 1) {
-
-        user_login();
+        loginUser();
     } else if (mood == 2) {
-
-        user_signin();
+        signupUser();
     } else {
 
         return 0;
@@ -365,9 +352,9 @@ int login_menu() {
 
 // --------------------------------------------------------------------------------------------------------------------------------------
 // Create menu
-void create_pvChat() {
+void createPvChat() {
 
-    sendData("create_pvChat");
+    sendData("createPvChat");
 
     char intended_user[MaxBufSize];
     int res, isContinue = 1;
@@ -385,12 +372,12 @@ void create_pvChat() {
         sendData(intended_user);
         receiveData(buffer);
 
-        if (streq(buffer, DECLINE)) {
+        if (strEquality(buffer, DECLINE)) {
             printf("Username not exist, please try again...");
             clean();
-        } else if (streq(buffer, ACCEPT)) {
+        } else if (strEquality(buffer, ACCEPT)) {
             isContinue = 0;
-        } else if (streq(buffer, "N")) {
+        } else if (strEquality(buffer, "N")) {
             printf("Privet chat with yourself is already created, try Saved Messages...\n");
             clean();
             return;
@@ -400,7 +387,7 @@ void create_pvChat() {
 
     receiveData(buffer); // receiveData pv chat exist result
 
-    if (streq(buffer, DECLINE)) {
+    if (strEquality(buffer, DECLINE)) {
 
         printf("The privet chat with \"%s\" is already exist...\n", intended_user);
         clean();
@@ -409,7 +396,7 @@ void create_pvChat() {
 
     receiveData(buffer); // receiveData pv chat final result
 
-    if (streq(buffer, ACCEPT)) {
+    if (strEquality(buffer, ACCEPT)) {
 
         printf("The privet chat with \"%s\" is created successfully...\n", intended_user);
         clean();
@@ -417,9 +404,9 @@ void create_pvChat() {
 
 }
 
-void create_group() {
+void createGroup() {
 
-    sendData("create_group");
+    sendData("createGroup");
 
     char group_id[MaxBufSize];
 
@@ -439,26 +426,26 @@ void create_group() {
         sendData(group_id);
         receiveData(buffer);
 
-        if (streq(buffer, DECLINE)) {
+        if (strEquality(buffer, DECLINE)) {
             printf("This ID is already token, please try again...");
             clean();
-        } else if (streq(buffer, ACCEPT)) {
+        } else if (strEquality(buffer, ACCEPT)) {
             isContinue = 0;
         }
     } while (isContinue == 1);
 
     receiveData(buffer); // receiveData result
 
-    if (streq(buffer, ACCEPT)) {
+    if (strEquality(buffer, ACCEPT)) {
         printf("The group with ID \"%s\" is created successfully...\n", group_id);
         clean();
     }
 
 }
 
-void create_channel() {
+void createChannel() {
 
-    sendData("create_channel");
+    sendData("createChannel");
 
     char channel_id[MaxBufSize];
 
@@ -478,23 +465,23 @@ void create_channel() {
         sendData(channel_id);
         receiveData(buffer);
 
-        if (streq(buffer, DECLINE)) {
+        if (strEquality(buffer, DECLINE)) {
             printf("This ID is already token, please try again...");
             clean();
-        } else if (streq(buffer, ACCEPT)) {
+        } else if (strEquality(buffer, ACCEPT)) {
             isContinue = 0;
         }
     } while (isContinue == 1);
 
     receiveData(buffer); // receiveData result
 
-    if (streq(buffer, ACCEPT)) {
+    if (strEquality(buffer, ACCEPT)) {
         printf("The channel with ID \"%s\" is created successfully...\n", channel_id);
         clean();
     }
 }
 
-void create_menu() {
+void createMenu() {
 
     int mood;
     while (1) {
@@ -513,15 +500,15 @@ void create_menu() {
 
         if (mood == 1) {
 
-            create_pvChat();
+            createPvChat();
             return;
         } else if (mood == 2) {
 
-            create_group();
+            createGroup();
             return;
         } else if (mood == 3) {
 
-            create_channel();
+            createChannel();
             return;
         } else if (mood == 4) {
 
@@ -536,9 +523,9 @@ void create_menu() {
 
 // --------------------------------------------------------------------------------------------------------------------------------------
 // Join menu
-void join_group() {
+void joinGroup() {
 
-    sendData("join_group");
+    sendData("joinGroup");
 
     char group_id[MaxBufSize];
 
@@ -558,12 +545,12 @@ void join_group() {
         sendData(group_id);
         receiveData(buffer);
 
-        if (streq(buffer, DECLINE)) {
+        if (strEquality(buffer, DECLINE)) {
             printf("There is no group ID with \"%s\", please try again...", group_id);
             clean();
-        } else if (streq(buffer, ACCEPT)) {
+        } else if (strEquality(buffer, ACCEPT)) {
             isContinue = 0;
-        } else if (streq(buffer, "D")) {
+        } else if (strEquality(buffer, "D")) {
             printf("You already joined the group with ID \"%s\"...\n", group_id);
             clean();
             return;
@@ -572,16 +559,16 @@ void join_group() {
 
     receiveData(buffer); // receiveData result
 
-    if (streq(buffer, ACCEPT)) {
+    if (strEquality(buffer, ACCEPT)) {
         printf("You joined the group with ID \"%s\" successfully...\n", group_id);
         clean();
     }
 
 }
 
-void join_channel() {
+void joinChannel() {
 
-    sendData("join_channel");
+    sendData("joinChannel");
 
     char channel_id[MaxBufSize];
 
@@ -601,12 +588,12 @@ void join_channel() {
         sendData(channel_id);
         receiveData(buffer);
 
-        if (streq(buffer, DECLINE)) {
+        if (strEquality(buffer, DECLINE)) {
             printf("There is no channel ID with \"%s\", please try again...", channel_id);
             clean();
-        } else if (streq(buffer, ACCEPT)) {
+        } else if (strEquality(buffer, ACCEPT)) {
             isContinue = 0;
-        } else if (streq(buffer, "D")) {
+        } else if (strEquality(buffer, "D")) {
             printf("You already joined the channel with ID \"%s\"...\n", channel_id);
             clean();
             return;
@@ -615,13 +602,13 @@ void join_channel() {
 
     receiveData(buffer); // receiveData result
 
-    if (streq(buffer, ACCEPT)) {
+    if (strEquality(buffer, ACCEPT)) {
         printf("You joined the channel with ID \"%s\" successfully...\n", channel_id);
         clean();
     }
 }
 
-void join_menu() {
+void joinMenu() {
 
     int mood;
     while (1) {
@@ -640,11 +627,11 @@ void join_menu() {
 
         if (mood == 1) {
 
-            join_group();
+            joinGroup();
             return;
         } else if (mood == 2) {
 
-            join_channel();
+            joinChannel();
             return;
         } else if (mood == 3) {
 
@@ -704,7 +691,7 @@ void synthesisText(const char *received_message, char *senderName, char *status,
     message[i] = '\0';
 }
 
-void show_MessageStyle(const char *received_message) {
+void showMessageStyle(const char *received_message) {
 
     char senderName[MaxBufSize], messageNum[MaxBufSize], time[MaxBufSize], message[MaxBufSize];
     char status;
@@ -726,23 +713,23 @@ void show_MessageStyle(const char *received_message) {
 
 }
 
-void show_previousMessages() {
+void showPreviousMessages() {
 
     char receive_message[MaxBufSize];
 
     //sendData(ACCEPT);
     receiveData(receive_message);
 
-    while (!streq(receive_message, DECLINE)) {
+    while (!strEquality(receive_message, DECLINE)) {
 
-        show_MessageStyle(receive_message);
+        showMessageStyle(receive_message);
         //sendData(ACCEPT); // i am ready to get your next message
         receiveData(receive_message);
 
     }
 }
 
-void show_headStyle(const char *ID, const char type_flag) {
+void showHeadStyle(const char *ID, const char type_flag) {
 
     // X40
     if (type_flag == 'S') {
@@ -759,38 +746,38 @@ void show_headStyle(const char *ID, const char type_flag) {
 
 // --------------------------------------------------------------------------------------------------------------------------------------
 // Start chatting
-int get_list(char listType_flag) {
+int getList(char listType_flag) {
 
     char list_line[MaxBufSize];
     int count = 1;
 
     list[0] = '\0'; // at first clean list
 
-    if (listType_flag == 'P') { strapp(list, "Your privet chats list:\n"); }
-    if (listType_flag == 'G') { strapp(list, "Your groups list:\n"); }
-    if (listType_flag == 'C') { strapp(list, "Your channels list:\n"); }
+    if (listType_flag == 'P') { strAppend(list, "Your privet chats list:\n"); }
+    if (listType_flag == 'G') { strAppend(list, "Your groups list:\n"); }
+    if (listType_flag == 'C') { strAppend(list, "Your channels list:\n"); }
 
 
     while (1) {
 
         receiveData(buffer);
-        if (streq(buffer, DECLINE)) {
+        if (strEquality(buffer, DECLINE)) {
             break;
         }
 
         sprintf(list_line, "%d. %s\n", count, buffer + 1); // first character is extra
         count++;
 
-        strapp(list, list_line);
+        strAppend(list, list_line);
     }
     sprintf(list_line, "%d. Back to main menu\n", count);
-    strapp(list, list_line);
+    strAppend(list, list_line);
 
     return count;
 
 }
 
-void show_commandList() {
+void showCommandList() {
 
     printf(
             "________________________________________________________________________________\n"
@@ -812,12 +799,12 @@ void savedMessages() {
     while (1) {
 
         system("cls");
-        show_headStyle("Saved Messages", 'S');
-        show_previousMessages();
+        showHeadStyle("Saved Messages", 'S');
+        showPreviousMessages();
 
-        show_commandList();
-        getstr(message);
-        if (streq(message, "/exit")) {
+        showCommandList();
+        getStr(message);
+        if (strEquality(message, "/exit")) {
             sendData(DECLINE);
             return;
         }
@@ -834,12 +821,12 @@ void goToPvChat() {
     while (1) {
 
         system("cls");
-        show_headStyle(pvChat_id, 'P');
-        show_previousMessages();
+        showHeadStyle(pvChat_id, 'P');
+        showPreviousMessages();
 
-        show_commandList();
-        getstr(message);
-        if (streq(message, "/exit")) {
+        showCommandList();
+        getStr(message);
+        if (strEquality(message, "/exit")) {
             //Sleep(WaitTOSendMessage);
             sendData(DECLINE);
             return;
@@ -854,7 +841,7 @@ void pvChats() {
     sendData("pvChats");
 
     int exitBy;
-    exitBy = get_list('P');
+    exitBy = getList('P');
 
     int mood;
     while (1) {
@@ -894,12 +881,12 @@ void goToGroup() {
     while (1) {
 
         system("cls");
-        show_headStyle(group_id, 'G');
-        show_previousMessages();
+        showHeadStyle(group_id, 'G');
+        showPreviousMessages();
 
-        show_commandList();
-        getstr(message);
-        if (streq(message, "/exit")) {
+        showCommandList();
+        getStr(message);
+        if (strEquality(message, "/exit")) {
             //Sleep(WaitTOSendMessage);
             sendData(DECLINE);
             return;
@@ -915,7 +902,7 @@ void groups() {
     sendData("groups");
 
     int exitBy;
-    exitBy = get_list('G');
+    exitBy = getList('G');
 
     int mood;
     while (1) {
@@ -959,16 +946,16 @@ void goToChannel() {
     while (1) {
 
         system("cls");
-        show_headStyle(channel_id, 'C');
-        show_previousMessages();
+        showHeadStyle(channel_id, 'C');
+        showPreviousMessages();
 
-        show_commandList();
-        getstr(message);
-        if (streq(message, "/exit")) {
+        showCommandList();
+        getStr(message);
+        if (strEquality(message, "/exit")) {
             //Sleep(WaitTOSendMessage);
             sendData(DECLINE);
             return;
-        } else if (streq(message, "")) {
+        } else if (strEquality(message, "")) {
             sendData(message);
         }
 
@@ -991,7 +978,7 @@ void channels() {
     sendData("channels");
 
     int exitBy;
-    exitBy = get_list('C');
+    exitBy = getList('C');
 
     int mood;
     while (1) {
@@ -1025,14 +1012,14 @@ void channels() {
 
 // --------------------------------------------------------------------------------------------------------------------------------------
 // Contacts
-void show_Contactlist() {
+void showContactList() {
 
     printf("Your contacts list:\n");
 
     while (1) {
 
         receiveData(buffer);
-        if (streq(buffer, DECLINE)) {
+        if (strEquality(buffer, DECLINE)) {
             break;
         }
 
@@ -1047,29 +1034,7 @@ void show_Contactlist() {
 
 }
 
-void get_Contactlist() {
-
-    char list_line[MaxBufSize];
-    list[0] = '\0'; // at first clean list
-
-    while (1) {
-
-        receiveData(buffer);
-        if (streq(buffer, DECLINE)) {
-            break;
-        }
-
-        sprintf(list_line, "%s\n", buffer + 1); // first character is extra
-        strapp(list, list_line);
-    }
-    sprintf(list_line,
-            "1. New contact\n"
-            "2. Back to main menu\n");
-    strapp(list, list_line);
-
-}
-
-void add_contact() {
+void addContact() {
 
     char intended_user[MaxBufSize];
     int res;
@@ -1088,15 +1053,15 @@ void add_contact() {
         sendData(intended_user);
         receiveData(buffer);
 
-        if (streq(buffer, DECLINE)) {
+        if (strEquality(buffer, DECLINE)) {
             printf("Username do not exist, please try again...");
             clean();
-        } else if (streq(buffer, ACCEPT)) {
+        } else if (strEquality(buffer, ACCEPT)) {
             printf("The contact with ID \"%s\" successfully add in your contact list...\n", intended_user);
             clean();
             sendData(ACCEPT);
             return;
-        } else if (streq(buffer, "D")) {
+        } else if (strEquality(buffer, "D")) {
             printf("You already added the contact with ID \"%s\" to your contact list...\n", intended_user);
             clean();
             sendData(ACCEPT);
@@ -1105,7 +1070,7 @@ void add_contact() {
     }
 }
 
-void delete_contact() {
+void deleteContact() {
 
     char intended_user[MaxBufSize];
     int res;
@@ -1124,10 +1089,10 @@ void delete_contact() {
         sendData(intended_user);
         receiveData(buffer);
 
-        if (streq(buffer, DECLINE)) {
+        if (strEquality(buffer, DECLINE)) {
             printf("Username do not exist in your contact list, please try again...");
             clean();
-        } else if (streq(buffer, ACCEPT)) {
+        } else if (strEquality(buffer, ACCEPT)) {
             printf("The contact with ID \"%s\" successfully delete from your contact list...\n", intended_user);
             clean();
             sendData(ACCEPT);
@@ -1145,7 +1110,7 @@ void contacts() {
 
         mood = -1;
         system("cls");
-        show_Contactlist(); // here is contact list
+        showContactList(); // here is contact list
 
         scanf("%d", &mood);
         clean();
@@ -1154,12 +1119,12 @@ void contacts() {
 
             sprintf(buffer, "%d", mood);
             sendData(buffer);
-            add_contact();
+            addContact();
         } else if (mood == 2) {
 
             sprintf(buffer, "%d", mood);
             sendData(buffer);
-            delete_contact();
+            deleteContact();
         } else if (mood == 3) {
 
             sendData(DECLINE);
@@ -1176,7 +1141,7 @@ void contacts() {
 
 // --------------------------------------------------------------------------------------------------------------------------------------
 // main menu
-int main_menu() {
+int mainMenu() {
 
     int mood;
     while (1) {
@@ -1194,7 +1159,7 @@ int main_menu() {
                 "5. Contacts\n"
                 "6. Create\n"
                 "7. Join\n"
-                "8. Log out\n"
+                "8. Logout\n"
                 "9. Exit\n", UserName);
 
         scanf("%d", &mood);
@@ -1217,10 +1182,10 @@ int main_menu() {
             contacts();
         } else if (mood == 6) {
 
-            create_menu();
+            createMenu();
         } else if (mood == 7) {
 
-            join_menu();
+            joinMenu();
         } else if (mood == 8) {
 
             return 1; // start from login menu
@@ -1248,10 +1213,10 @@ int main(int args, char **strs) {
     int loginMenu_continue, mainMenu_continue;
     while (1) {
 
-        loginMenu_continue = login_menu();
+        loginMenu_continue = loginMenu();
         if (loginMenu_continue == 0)break;
 
-        mainMenu_continue = main_menu();
+        mainMenu_continue = mainMenu();
         if (mainMenu_continue == 0)break;
 
     }
