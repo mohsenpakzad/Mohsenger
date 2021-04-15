@@ -1,5 +1,5 @@
 # Mohsenger
-## A messanger written in C for Principal of Programming course final project
+## A simple messenger written in C for Principal of Programming course final project
 Implemented by socket and sqlite3 dbms and single thread consepts.
 The project contains 3 parts:
 1. server
